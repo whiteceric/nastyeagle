@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from bs4 import BeautifulSoup
 import requests
-import lxml
 
 def today(_timezone='America/New_York'):
     """
