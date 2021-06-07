@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from bs4 import BeautifulSoup
 import requests
+import lxml
 
 def today(_timezone='America/New_York'):
     """
@@ -10,21 +11,21 @@ def today(_timezone='America/New_York'):
     """
     return datetime.now(timezone(_timezone)).replace(hour=0, minute=0, second=0, microsecond=0)
 
-def load_stock_page(tag, daysBack):
+def load_stock_page(ticker, daysBack):
     """
     Returns the Beautiful soup object for the stock page
     """
     period2 = int(today('GMT').timestamp())
     period1 = int((today('GMT') - timedelta(daysBack*2)).timestamp())
-    compiled_url = f'https://finance.yahoo.com/quote/{tag}/history?period1={period1}&period2={period2}&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true'
+    compiled_url = f'https://finance.yahoo.com/quote/{ticker}/history?period1={period1}&period2={period2}&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true'
     source = requests.get(compiled_url).text
     return  BeautifulSoup(source, 'lxml')
 
-def get_latest_n_closing_prices_scrape(tag, n):
+def get_latest_n_closing_prices_scrape(ticker, n):
     """
     Returns a dictionary mapping the previous n dates to the closing price on those dates for this stock
     """
-    soup = load_stock_page(tag, n)
+    soup = load_stock_page(ticker, n)
     out = []
     close_price_index = 4
     _timezone = timezone('GMT')
@@ -41,11 +42,11 @@ def get_latest_n_closing_prices_scrape(tag, n):
             continue # we found one of the end rows with no data
     return out
 
-def get_latest_price_scrape(tag):
+def get_latest_price_scrape(ticker):
     """
-    Scrapes the latest stock price for tag from finance.yahoo.com
+    Scrapes the latest stock price for ticker from finance.yahoo.com
     """
-    soup = load_stock_page(tag, 7)
+    soup = load_stock_page(ticker, 7)
     return soup.find('span', attrs={"data-reactid": "50"}).text
 
 def get_date_str(date):
@@ -63,48 +64,48 @@ def market_open():
     return today().weekday() < 5 and time >= 9.5 and time  < 16
 
 
-def get_prev_day_close(tag, get_day_change=False):
+def get_prev_day_close(ticker, get_day_change=False):
     """
-    Returns the price of the stock tag at the close of the previous day.
+    Returns the price of the stock ticker at the close of the previous day.
     If get_day_change is set to True returns a tuple containing the previous day close and the day change for the
     previous day.
     """
     yesterday = today() - timedelta(1)
     yesterday_str = get_date_str(yesterday) 
     try:
-        latest_week_scrape = get_latest_week_scrape(tag)
+        latest_week_scrape = get_latest_n_closing_prices_scrape(ticker, 7)
         close_price = latest_week_scrape[0][1] 
         prev_close_price = latest_week_scrape[1][1]
         day_change = close_price - prev_close_price
     except Exception as e:
-        print('failed to get previous day close for', tag, e)
+        print('failed to get previous day close for', ticker, e)
         close_price = 0
         day_change = 0
     return (close_price, day_change) if get_day_change else close_price
 
-def get_current_price(tag, get_day_change=False):
+def get_current_price(ticker, get_day_change=False):
     """
     Returns the current price of a stock
     If get_day_change is set to True, returns a tuple containing the current price and the day change
     """
     if market_open():
         try:
-            current_price = float(get_latest_price_scrape(tag))
-            prev_price = get_prev_day_close(tag, get_day_change=False)
+            current_price = float(get_latest_price_scrape(ticker))
+            prev_price = get_prev_day_close(ticker, get_day_change=False)
             return (current_price, current_price - prev_price) if get_day_change else current_price 
         except Exception as e:
-            print('failed to get current price for', tag, e)
+            print('failed to get current price for', ticker, e)
             return 0
     else:
-        return get_prev_day_close(tag, get_day_change=get_day_change)
+        return get_prev_day_close(ticker, get_day_change=get_day_change)
 
-def get_prev_week_endpoints(tag):
+def get_prev_week_endpoints(ticker):
     """
     Returns a list of tuples representing the past 5 closing prices for a stock
     The format for the list is:
     [(-5, 80.54), (-4, 81.2), ... (-1, 85.32)]
     """
-    last_week_scrape = get_latest_n_closing_prices_scrape(tag, n)
+    last_week_scrape = get_latest_n_closing_prices_scrape(ticker, n)
     _today = today('GMT')
     return [((_date - _today).days, close_price) for _date, close_price in last_week_scrape]
 
