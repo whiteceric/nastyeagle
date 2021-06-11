@@ -2,24 +2,36 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import SymbolSerializer
-from .stock_scraper import get_current_price, get_prev_week_endpoints
+from django.templatetags.static import static
+from .serializers import StockSerializer
+from .stock_scraper import get_current_price, get_prev_week_endpoints, market_open
+from .models import Stock
 from datetime import datetime
+from pytz import timezone, utc as utc_timezone
 
 import json
+import os
+
+dirname = os.path.dirname(__file__)
+filename = os.path.join(dirname, 'static/stock_scrape_api/tickers.json')
+with open(filename, 'rb') as f:
+    tickers = json.load(f)
 
 # create some views
 
 @api_view(['GET'])
 def current_price(request, ticker):
+    ticker = ticker.upper()
     try:
-        price = get_current_price(ticker)
-        return Response({
-            'price': price, 
-            'ticker': ticker,
-            'time-checked': datetime.utcnow().timestamp(),
-        })
-    except: # add special except for the error we create in stock scraper
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        stock = Stock.objects.get(ticker=ticker)
+    except Stock.DoesNotExist:
+        if ticker in tickers:
+            stock = Stock(ticker=ticker.upper(), name=tickers[ticker])
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+    stock.update()
+    stock.save()
+    serializer = StockSerializer(stock, many=False)
+    return Response(serializer.data)
 
     

@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import Symbol
+from .models import Stock
 
-class SymbolSerializer(serializers.ModelSerializer):
+class StockSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Symbol
-        fields = '__all__'
+        model = Stock
+        fields = ['ticker', 'name', 'latest_price', 'latest_day_change', 'last_updated']

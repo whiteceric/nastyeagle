@@ -4,9 +4,11 @@ from pytz import timezone
 from bs4 import BeautifulSoup
 import requests
 
-def today(_timezone='America/New_York'):
+EST = timezone('US/Eastern') # timezone of NYSE
+
+def today_start(_timezone='America/New_York'):
     """
-    For debugging, allows me to change what 'today' is.
+    Returns a datetime object representing the current day at midnight
     """
     return datetime.now(timezone(_timezone)).replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -14,8 +16,8 @@ def load_stock_page(ticker, daysBack):
     """
     Returns the Beautiful soup object for the stock page
     """
-    period2 = int(today('GMT').timestamp())
-    period1 = int((today('GMT') - timedelta(daysBack*2)).timestamp())
+    period2 = int(today_start('GMT').timestamp())
+    period1 = int((today_start('GMT') - timedelta(daysBack*2)).timestamp())
     compiled_url = f'https://finance.yahoo.com/quote/{ticker}/history?period1={period1}&period2={period2}&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true'
     source = requests.get(compiled_url).text
     return  BeautifulSoup(source, 'lxml')
@@ -48,20 +50,17 @@ def get_latest_price_scrape(ticker):
     soup = load_stock_page(ticker, 7)
     return soup.find('span', attrs={"data-reactid": "50"}).text
 
-def get_date_str(date):
+def market_open(timestamp=None):
     """
-    Returns the given date in YYYY-MM-DD format. date is the object returned by datetime.today()
+    Checks if the timestamp (UTC) is between 9:30am  and 4pm EST on a weekday.
+    If timestamp is none uses datetime.now() (converted to EST).
     """
-    return date.strftime('%Y-%m-%d')
-
-def market_open():
-    """
-    Checks if the time is between 9:30am  and 4pm EST on a weekday.
-    """
-    time = today() 
-    time = time.hour + time.minute/60
-    return today().weekday() < 5 and time >= 9.5 and time  < 16
-
+    if timestamp is None:
+        time = datetime.now(EST) 
+    else:
+        time = datetime.fromtimestamp(timestamp).astimezone(EST)
+    time_dec = time.hour + time.minute/60
+    return time.weekday() < 5 and time_dec >= 9.5 and time_dec < 16
 
 def get_prev_day_close(ticker, get_day_change=False):
     """
@@ -69,8 +68,7 @@ def get_prev_day_close(ticker, get_day_change=False):
     If get_day_change is set to True returns a tuple containing the previous day close and the day change for the
     previous day.
     """
-    yesterday = today() - timedelta(1)
-    yesterday_str = get_date_str(yesterday) 
+    yesterday = today_start() - timedelta(1)
     try:
         latest_week_scrape = get_latest_n_closing_prices_scrape(ticker, 7)
         close_price = latest_week_scrape[0][1] 
@@ -115,4 +113,5 @@ if __name__ == '__main__':
     #print(get_price_on_date('DIS', '2021/03/01'))
     #print(get_prev_week_endpoints('PINS'))
     #print(get_current_price('AAPL'))
-    print(get_current_price('AMZN'))
+    #print(get_current_price('AMZN'))
+    pass
