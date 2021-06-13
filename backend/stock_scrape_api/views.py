@@ -19,6 +19,9 @@ with open(filename, 'rb') as f:
 
 # create some views
 
+def home_view(request):
+    return render(request, 'home.html', {})
+
 @api_view(['GET'])
 def current_price(request, ticker):
     ticker = ticker.upper()

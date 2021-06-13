@@ -1,6 +1,7 @@
 from django.urls import path, include
-from .views import current_price
+from .views import current_price, home_view
 
 urlpatterns = [
-    path('stock-price/<str:ticker>', current_price, name='stock-price')
+    path('', home_view, name='home'),
+    path('stock-price/<str:ticker>', current_price, name='stock-price'),
 ]

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<br><br>
+<h1 class="title">Welcome to the nastyeagle API</h1>
+<h2 class="title">How to Use:</h2>
+<p>To find the current price of a stock, make a GET request to nastyeagle.com/stock-price/[STOCK_TICKER]. For example, the current price of $TSLA can be found with:</p>
+<pre>
+<code>curl nastyeagle.com/stock-price/TSLA</code>
+</pre>
+<p>For which the response will be a JSON like:</p>
+<pre>
+<code>
+  {
+    "ticker": "TSLA",
+    "name": "Tesla Inc. Common Stock",
+    "latest_price": 609.89,
+    "latest_day_change": -0.23,
+    "last_updated": 1623545370.135269
+  }
+</code>
+</pre>
+<p>Note that 'last_updated' represents the timestamp for which the stock was last updated (updates do not happen at each API call, only when necessary for an up to date price)</p>
+
+{% endblock %}
+
