@@ -58,6 +58,7 @@ class Stock(models.Model):
         '''
         if not self.last_updated or market_open() or not time_after_close(self.last_updated):
             new_price, new_day_change = get_current_price(ticker=self.ticker, get_day_change=True)
+            new_day_change = round(new_day_change, 2) # to avoid floating point errors showing up in API responses
             self.latest_price = new_price
             self.latest_day_change = new_day_change
             self.last_updated = datetime.now().timestamp()
