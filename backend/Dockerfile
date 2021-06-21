@@ -9,10 +9,9 @@ ENV DJANGO_ALLOWED_HOSTS $DJANGO_ALLOWED_HOSTS
 ENV DJANGO_SECRET_KEY $DJANGO_SECRET_KEY
 ENV DJANGO_CORS_ORIGIN_WHITELIST $ DJANGO_CORS_ORIGIN_WHITELIST
 
-RUN mkdir /backend
-WORKDIR /backend
-COPY requirements.txt /backend/
+RUN mkdir /app
+WORKDIR /app
+COPY requirements.txt /app/
+COPY . /app/
 EXPOSE 8000
 RUN pip install -r requirements.txt
-RUN python manage.py makemigrations
-RUN python manage.py migrate

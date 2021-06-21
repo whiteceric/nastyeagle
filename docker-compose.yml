@@ -1,4 +1,4 @@
-version: '3'
+version: "3.9"
 
 services:
   db:
@@ -10,12 +10,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
   backend:
-    build:
-      context: ./backend
-      args:
-        DJANGO_ALLOWED_HOSTS: '*'
-        DJANGO_SECRET_KEY: '*'
-        DJANGO_CORS_ORIGIN_WHITELIST: '*'
+    build: ./backend/
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
