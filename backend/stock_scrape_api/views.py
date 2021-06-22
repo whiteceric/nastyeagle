@@ -28,15 +28,13 @@ def current_price(request, ticker):
     ticker = ticker.upper()
     try:
         stock = Stock.objects.get(ticker=ticker)
-        print('Getting:', stock)
     except Stock.DoesNotExist:
         if ticker in tickers:
             stock = Stock(ticker=ticker.upper(), name=tickers[ticker])
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
     stock.update()
-    print('price:', stock.latest_price)
-    stock.save()
+    # stock.save()
     serializer = StockSerializer(stock, many=False)
     sys.stdout.flush()
     return Response(serializer.data)

@@ -22,25 +22,17 @@ def time_after_close(timestamp):
 
     TODO: test this function (maybe some doctests)
     '''
-    print('checking time after close', flush=True)
     time = datetime.fromtimestamp(timestamp).astimezone(EST)
-    print('time:', time, flush=True)
     time_dec = time.hour + time.minute/60
     now = datetime.now(EST)
     now_dec = now.hour + now.minute/60
     if market_open(now.astimezone(UTC).timestamp()) or market_open(timestamp):
-        print('market open', flush=True)
         return False
     elif now.weekday() >= 5 or (now.weekday() == 0 and now_dec < 9.5): # weekend or monday morning 
         # get the date of the previous Friday
         prev = now - ONE_DAY
-        print('checking prev friday', flush=True)
         while prev.weekday() != 4:
             prev = prev - ONE_DAY
-        print('got prev friday', flush=True)
-
-        print('prev:', prev, flush=True)
-        print('time:', time, flush=True)
         return (prev.date() == time.date() and time_dec >= 16) or time.date() > prev.date()
     else:
         if now_dec >= 16:
@@ -65,19 +57,14 @@ class Stock(models.Model):
 
         Returns True if an update was made, False otherwise
         '''
-        print('updating', self.ticker, flush=True)
         if not self.last_updated or market_open() or not time_after_close(self.last_updated):
-            print('getting new price', flush=True)
             new_price, new_day_change = get_current_price(ticker=self.ticker, get_day_change=True)
             new_day_change = round(new_day_change, 2) # to avoid floating point errors showing up in API responses
             self.latest_price = new_price
             self.latest_day_change = new_day_change
             self.last_updated = datetime.now().timestamp()
-            print('saving', flush=True)
             self.save()
-            print('done', flush=True)
             return True
-        print('done (false)', flush=True)
         return False
 
 
