@@ -15,4 +15,3 @@ COPY requirements.txt /app/
 COPY . /app/
 EXPOSE 8000
 RUN pip install -r requirements.txt
-RUN python manage.py makemigrations
