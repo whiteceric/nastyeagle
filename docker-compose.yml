@@ -18,7 +18,7 @@ services:
     build: ./backend/
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     environment:
-      - DEBUG=1
+      - DEBUG=True
       - SECRET_KEY=THE_SECREY_KEY
     volumes:
       - .:/code
