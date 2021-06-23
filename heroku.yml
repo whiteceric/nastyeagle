@@ -1,0 +1,8 @@
+setup:
+  addons:
+  - plan: heroku-postgresql
+build:
+  docker:
+    backend: backend/Dockerfile
+run:
+  backend: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
