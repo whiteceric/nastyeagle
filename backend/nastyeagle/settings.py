@@ -82,6 +82,7 @@ WSGI_APPLICATION = 'nastyeagle.wsgi.application'
 
 DATABASES = dict()
 if os.environ.get('DATABASE_URL', False):
+    print('DB URL FOUND')
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True) 
 else:
     DATABASES['default'] = {
