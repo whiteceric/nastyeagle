@@ -30,7 +30,7 @@ DEBUG = os.environ.get('DEBUG', False)
 print(f'{SECRET_KEY = }')
 print(f'{DEBUG = }')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://nastyeagle.herokuapp.com', 'nastyeagle.com']
 
 
 # Application definition
