@@ -24,7 +24,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'badsecretkey')
 debug_str = os.environ.get('DEBUG', 'False')
 DEBUG = debug_str == 'True'
 
-ALLOWED_HOSTS = ['nastyeagle.herokuapp.com', 'nastyeagle.com']
+ALLOWED_HOSTS = ['nastyeagle.herokuapp.com', 'nastyeagle.com', 'www.nastyeagle.com']
 
 
 # Application definition
