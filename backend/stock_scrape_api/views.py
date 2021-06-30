@@ -22,7 +22,9 @@ with open(filename, 'rb') as f:
 # create some views
 
 def home_view(request):
-    return render(request, 'home.html', {})
+    # print(get_client_ip(request))
+    ip = get_client_ip(request)
+    return render(request, 'home.html', {'client_ip': ip})
 
 @api_view(['GET'])
 def current_price(request, ticker):
@@ -47,4 +49,10 @@ def current_price(request, ticker):
     sys.stdout.flush()
     return Response(serializer.data)
 
-    
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip 
