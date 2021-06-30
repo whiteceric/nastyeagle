@@ -2,6 +2,7 @@ from django.db import models
 from .stock_scraper import market_open, get_current_price, today_start, EST
 from datetime import datetime, timedelta
 from pytz import UTC
+from django.conf import settings
 
 ONE_DAY = timedelta(days=1)
 
@@ -47,26 +48,41 @@ class Stock(models.Model):
     latest_day_change = models.FloatField(blank=True, null=True)
     last_updated = models.FloatField(blank=True, null=True)
 
-    def update(self):
+    def update(self, force_update=False):
         '''
         Update this stock by finding the latest stock price and day change.
 
+        If force_update is True, finds the most recent close price and day change. 
         If the market is open finds the most recent price and day change. If the
         market is closed and last_updated is after the last market close
         then no update is made. Otherwise, finds the most recent close price and day change.
 
         Returns True if an update was made, False otherwise
         '''
-        if not self.last_updated or market_open() or not time_after_close(self.last_updated):
+        if force_update or not self.last_updated or market_open() or not time_after_close(self.last_updated):
+            if settings.DEBUG:
+                print(f'Updating {self.ticker}:', flush=True)
+                print(f'{self.last_updated = }', flush=True)
+                print(f'{market_open() = }', flush=True)
+                if self.last_updated:
+                    print(f'{time_after_close(self.last_updated) = }', flush=True)
+
             new_price, new_day_change = get_current_price(ticker=self.ticker, get_day_change=True)
             new_day_change = round(new_day_change, 2) # to avoid floating point errors showing up in API responses
             self.latest_price = new_price
             self.latest_day_change = new_day_change
             self.last_updated = datetime.now().timestamp()
             self.save()
+            if settings.DEBUG:
+                print(f'New price: {self.latest_price}', flush=True)
+                print(f'New Day Change: {self.latest_day_change}', flush=True)
             return True
+        if settings.DEBUG:
+            print('No need to update:')
+            print(f'{self.last_updated = }', flush=True)
+            print(f'{market_open() = }', flush=True)
+            print(f'{time_after_close(self.last_updated) = }', flush=True)
         return False
-
 
     def __str__(self):
         return self.ticker

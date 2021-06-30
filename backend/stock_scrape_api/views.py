@@ -8,6 +8,7 @@ from .stock_scraper import get_current_price, get_prev_week_endpoints, market_op
 from .models import Stock
 from datetime import datetime
 from pytz import timezone, utc as utc_timezone
+from django.conf import settings
 
 import json
 import os
@@ -26,14 +27,21 @@ def home_view(request):
 @api_view(['GET'])
 def current_price(request, ticker):
     ticker = ticker.upper()
+    force_update = request.GET.get('force-update', 'False') == 'True'
     try:
         stock = Stock.objects.get(ticker=ticker)
+        if settings.DEBUG:
+            print(f'Found ticker {ticker}: {stock}', flush=True)
     except Stock.DoesNotExist:
         if ticker in tickers:
             stock = Stock(ticker=ticker.upper(), name=tickers[ticker])
+            if settings.DEBUG:
+                print(f'Create Stock object for {ticker}: {stock}', flush=True)
         else:
+            if settings.DEBUG:
+                print(f'{ticker} is invalid', flush=True)
             return Response(status=status.HTTP_404_NOT_FOUND)
-    stock.update()
+    stock.update(force_update=force_update)
     # stock.save()
     serializer = StockSerializer(stock, many=False)
     sys.stdout.flush()
