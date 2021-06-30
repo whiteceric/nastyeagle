@@ -14,17 +14,14 @@ import json
 import os
 import sys
 
+# Load tickers
 dirname = os.path.dirname(__file__)
 filename = os.path.join(dirname, 'static/stock_scrape_api/tickers.json')
 with open(filename, 'rb') as f:
     tickers = json.load(f)
 
-# create some views
-
 def home_view(request):
-    # print(get_client_ip(request))
-    ip = get_client_ip(request)
-    return render(request, 'home.html', {'client_ip': ip})
+    return render(request, 'home.html', {})
 
 @api_view(['GET'])
 def current_price(request, ticker):
