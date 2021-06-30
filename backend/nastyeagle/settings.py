@@ -14,6 +14,8 @@ from pathlib import Path
 import os
 import dj_database_url
 
+print(flush=True)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,7 +26,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'badsecretkey')
 debug_str = os.environ.get('DEBUG', 'False')
 DEBUG = debug_str == 'True'
 
-ALLOWED_HOSTS = ['nastyeagle.herokuapp.com', 'nastyeagle.com', 'www.nastyeagle.com']
+ALLOWED_HOSTS = ['localhost:8000', 'nastyeagle.herokuapp.com', 'nastyeagle.com', 'www.nastyeagle.com']
 
 
 # Application definition
