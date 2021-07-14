@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from bs4 import BeautifulSoup
 import requests
+from django.conf import settings
 
 EST = timezone('US/Eastern') # timezone of NYSE
 
@@ -20,6 +21,9 @@ def load_stock_page(ticker, daysBack):
     period1 = int((today_start('GMT') - timedelta(daysBack*2)).timestamp())
     compiled_url = f'https://finance.yahoo.com/quote/{ticker}/history?period1={period1}&period2={period2}&interval=1d&filter=history&frequency=1d&includeAdjustedClose=true'
     source = requests.get(compiled_url).text
+    if settings.DEBUG:
+        print(compiled_url)
+        print('Source text:\n', source)
     return  BeautifulSoup(source, 'lxml')
 
 def get_latest_n_closing_prices_scrape(ticker, n):
